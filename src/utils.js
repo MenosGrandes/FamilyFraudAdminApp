@@ -1,7 +1,9 @@
-import { Messages } from "./common_lib.js"; //MenosGrandes add this file into config..
+import { nanoid } from "nanoid";
+import { APP_TYPE, Messages } from "./common_lib.js"; //MenosGrandes add this file into config..
 
 export class WebSocketCommunicationHandler {
   _send(msgCallback) {
+    msgCallback["id"]=this.app_id;
     this.webSocket.send(JSON.stringify(msgCallback));
   }
   _handleMessage(msg) {
@@ -27,7 +29,11 @@ export class WebSocketCommunicationHandler {
       this._handleMessage(event);
     };
     this.webSocket.onopen = () => {
-      //this._send(Messages.getNewAnswers(5));
+      if (this.app_id === undefined) {
+        this.app_id = nanoid();
+        console.log(this.app_id + "generated ID");
+      }
+      this._send(Messages.setId(APP_TYPE.ADMIN));
     };
   }
   /*MenosGrandes this suppose to be send from the ADMINISTATOR APP, the one that is not visible for clients*/
@@ -42,30 +48,27 @@ export class WebSocketCommunicationHandler {
   }
 }
 const ws = new WebSocketCommunicationHandler();
-const  generateAnswersContainer = (quantity) =>
-{
+const generateAnswersContainer = (quantity) => {
   const answer_container = document.querySelector("#show_answers_container");
-  answer_container.innerHTML=''
+  answer_container.innerHTML = "";
   console.log(answer_container);
-  for(let i = 0 ; i < quantity; i++)
-  {
-      const _button = document.createElement("button");
-      _button.id=i;
-      _button.innerHTML=i;
-      answer_container.appendChild(_button);
-      _button.addEventListener('click', () =>ws.show_answer(i));
-
+  for (let i = 0; i < quantity; i++) {
+    const _button = document.createElement("button");
+    _button.id = i;
+    _button.innerHTML = i;
+    answer_container.appendChild(_button);
+    _button.addEventListener("click", () => ws.show_answer(i));
   }
-}
-const newQuestion = () =>
-{
+};
+const newQuestion = () => {
   const quantity = document.querySelector("#quantity").value;
   console.log(quantity);
   ws.request_new_question(quantity);
   generateAnswersContainer(quantity);
   //sendOverWS
-}
-export const setupStatics = () =>
-{
-  document.querySelector("#generate_new_question").addEventListener('click', () => newQuestion(quantity));
-}
+};
+export const setupStatics = () => {
+  document
+    .querySelector("#generate_new_question")
+    .addEventListener("click", () => newQuestion(quantity));
+};
