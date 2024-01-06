@@ -1,26 +1,21 @@
 import { nanoid } from "nanoid";
-import { APP_TYPE, Messages } from "./common_lib.js"; //MenosGrandes add this file into config..
+import { APP_TYPE, Messages, TOPIC } from "./common_lib.js"; //MenosGrandes add this file into config..
 
 export class WebSocketCommunicationHandler {
   _send(msgCallback) {
-    msgCallback["id"]=this.app_id;
+    msgCallback["id"] = this.app_id;
     this.webSocket.send(JSON.stringify(msgCallback));
   }
   _handleMessage(msg) {
     const data = JSON.parse(msg.data);
     console.log("DATA AFTER PARSE");
     console.log(data);
-    /*
     switch (data.topic) {
-      case TOPIC.SHOW_ANSWER:
-        var tmp = get(answers);
-        tmp[data.index].isVisible = true;
-        answers.set(tmp);
+      case TOPIC.NEW_ANSWERS: {
+        generateAnswersContainer(data);
         break;
-      case TOPIC.NEW_ANSWERS:
-        answers.set(data.answers);
-        break;
-    }*/
+      }
+    }
   }
   constructor() {
     this.webSocket = new WebSocket("ws://localhost:443/");
@@ -48,14 +43,20 @@ export class WebSocketCommunicationHandler {
   }
 }
 const ws = new WebSocketCommunicationHandler();
-const generateAnswersContainer = (quantity) => {
+
+
+const generateAnswerString = (answer) =>
+{
+  return answer.answer + ' [' + answer.points + ']';
+}
+const generateAnswersContainer = (msg) => {
   const answer_container = document.querySelector("#show_answers_container");
   answer_container.innerHTML = "";
-  console.log(answer_container);
-  for (let i = 0; i < quantity; i++) {
+  console.log(msg);
+  for (let i = 0; i < msg.answers.length; i++) {
     const _button = document.createElement("button");
     _button.id = i;
-    _button.innerHTML = i;
+    _button.innerHTML = generateAnswerString(msg.answers[i]);
     answer_container.appendChild(_button);
     _button.addEventListener("click", () => ws.show_answer(i));
   }
@@ -64,7 +65,6 @@ const newQuestion = () => {
   const quantity = document.querySelector("#quantity").value;
   console.log(quantity);
   ws.request_new_question(quantity);
-  generateAnswersContainer(quantity);
   //sendOverWS
 };
 export const setupStatics = () => {
