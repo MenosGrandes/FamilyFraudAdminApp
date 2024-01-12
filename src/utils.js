@@ -18,7 +18,7 @@ export class WebSocketCommunicationHandler {
     }
   }
   constructor() {
-    this.webSocket = new WebSocket("ws://localhost:443/");
+    this.webSocket = new WebSocket("ws://localhost:9001/");
 
     this.webSocket.onmessage = (event) => {
       this._handleMessage(event);
@@ -64,7 +64,7 @@ const generateAnswersContainer = (msg) => {
 const newQuestion = () => {
   const quantity = document.querySelector("#quantity").value;
   console.log(quantity);
-  ws.request_new_question(quantity);
+  ws.request_new_question(parseInt(quantity));
   //sendOverWS
 };
 export const setupStatics = () => {
